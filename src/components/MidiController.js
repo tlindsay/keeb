@@ -1,26 +1,34 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useReducer, useState } from 'react';
 import * as Midi from 'webmidi';
 import _ from 'lodash';
 
 export const MidiContext = React.createContext();
 
 export default function MidiController(props) {
-  const [ keys, setKeys ] = useState([]);
+  const [ keys, setKeys ] = useReducer(keyReducer, []);
   const [ pitchBend, setPitchBend ] = useState(0);
   const [ midiInput, setMidiInput ] = useState(null);
 
-  const keyDown = useCallback(({ data, note, velocity }) => {
-    setKeys([ ...keys, { data, note, velocity }])
-  }, [keys]);
+  // Define key modifiers
+  function keyReducer(state, action) {
+    switch(action.type) {
+      case 'keyDown':
+        let { data, note, velocity } = action.event;
+        return [...state, { data, note, velocity }];
+      case 'keyUp':
+        let { note: { number } } = action.event;
+        return _.reject(state, ['note.number', number]);
+      default:
+        throw new Error();
+    }
+  }
 
-  const keyUp = useCallback(({ note: { number } }) => {
-    setKeys(_.reject(keys, ['note.number', number]));
-  }, [keys]);
-
+  // Define pitchBend modifier
   const bendPitch = useCallback(({ value }) => {
     setPitchBend(value);
   }, []);
 
+  // Init MIDI library
   useEffect(() => {
     Midi.enable((err) => {
       if (err) {
@@ -32,16 +40,17 @@ export default function MidiController(props) {
     });
   }, []);
 
+  // Bind event handlers
   useEffect(() => {
     if (!midiInput) { return; }
-    midiInput.addListener('noteon', 1, keyDown);
-    midiInput.addListener('noteoff', 1, keyUp);
-    midiInput.addListener('pitchbend', 1, bendPitch);
+    midiInput.addListener('noteon', 'all', (event) => setKeys({ type: 'keyDown', event }));
+    midiInput.addListener('noteoff', 'all', (event) => setKeys({ type: 'keyUp', event }));
+    midiInput.addListener('pitchbend', 'all', bendPitch);
 
     return function cleanup() {
       midiInput.removeListener();
     }
-  }, [midiInput, keyDown, keyUp, bendPitch]);
+  }, [midiInput, bendPitch]);
 
   return (
     <MidiContext.Provider value={{ keys, pitchBend }}>
