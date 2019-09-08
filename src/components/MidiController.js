@@ -75,6 +75,7 @@ export default function MidiController(props) {
 
   return (
     <MidiContext.Provider value={{ keys, pitchBend }}>
+      <figcaption>Bend: {pitchBend} Keys: {keys.length}</figcaption>
       {props.children}
     </MidiContext.Provider>
   );
