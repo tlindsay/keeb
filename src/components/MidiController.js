@@ -42,7 +42,28 @@ export default function MidiController(props) {
 
   // Bind event handlers
   useEffect(() => {
-    if (!midiInput) { return; }
+    if (!midiInput) {
+      let isScrolling;
+      document.addEventListener('keydown', ({ keyCode }) => {
+        let data = [keyCode, keyCode, keyCode];
+        let note = { number: keyCode };
+        let velocity = 100;
+        setKeys({ type: 'keyDown', event: { data, note, velocity } });
+      });
+      document.addEventListener('keyup', ({ keyCode }) => {
+        let note = { number: keyCode };
+        setKeys({ type: 'keyUp', event: { note } });
+      });
+      document.addEventListener('scroll', (e) => {
+        e.preventDefault();
+        let value = document.documentElement.scrollTop / 35.0;
+        bendPitch({ value });
+        window.clearTimeout(isScrolling);
+        isScrolling = setTimeout(() => bendPitch({ value: 0 }));
+      });
+      return;
+    }
+
     midiInput.addListener('noteon', 'all', (event) => setKeys({ type: 'keyDown', event }));
     midiInput.addListener('noteoff', 'all', (event) => setKeys({ type: 'keyUp', event }));
     midiInput.addListener('pitchbend', 'all', bendPitch);
@@ -54,6 +75,7 @@ export default function MidiController(props) {
 
   return (
     <MidiContext.Provider value={{ keys, pitchBend }}>
+      <figcaption>Bend: {pitchBend} Keys: {keys.length}</figcaption>
       {props.children}
     </MidiContext.Provider>
   );

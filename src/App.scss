@@ -1,9 +1,22 @@
-body {
+html, body, #root, .App {
   background: #2f1e2e;
   color: #f5a;
   font-family: monospace;
   font-size: 1rem;
+  height: 100%;
   text-align: center;
 
   h1 { font-size: 4rem; }
+  figure {
+    border: 1px solid #f5a;
+    display: flex;
+    flex-direction: column;
+    min-height: 75%;
+    padding: 1em;
+
+    canvas {
+      flex: 1;
+    }
+    figcaption { margin-top: 1em; }
+  }
 }
