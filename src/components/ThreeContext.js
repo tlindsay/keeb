@@ -22,6 +22,8 @@ export default function ThreeCanvas(props) {
     renderer.setSize(clientWidth, clientHeight);
 
     let camera = new THREE.PerspectiveCamera(45, 1, 0.01, 1000);
+    camera.aspect = clientWidth / clientHeight;
+    camera.updateProjectionMatrix();
     camera.position.set(2, 2, 2);
     camera.lookAt(new THREE.Vector3());
 
