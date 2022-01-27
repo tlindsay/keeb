@@ -10,7 +10,7 @@
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-scripts": "3.1.1",
-    "three": "^0.107.0",
+    "three": "^0.137.0",
     "webmidi": "^2.5.0"
   },
   "scripts": {
